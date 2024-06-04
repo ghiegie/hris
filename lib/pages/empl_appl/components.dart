@@ -129,7 +129,7 @@ class VectorForm extends StatefulWidget {
   final String emptyLabel;
   final Widget Function(BuildContext, int) Function(List<dynamic>, void Function(int)) itemBuilder;
   final void Function(int) removeFn;
-  final void Function() addFn;
+  final dynamic Function() addFn;
 
   VectorForm({
     super.key, 
@@ -193,7 +193,7 @@ class _VectorFormState extends State<VectorForm> {
             ElevatedButton(
               onPressed: () {
                 var item = widget.addFn();
-                widget.vecList.
+                widget.vecList.add(item);
               }, 
               child: const Text('Add')
             )
