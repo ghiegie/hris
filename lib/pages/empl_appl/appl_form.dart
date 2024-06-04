@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hris/model/health_condition_model.dart';
 import 'package:hris/pages/empl_appl/components.dart';
-import 'package:hris/pages/empl_appl/healt_cond_itembuilder.dart';
 import 'package:hris/pages/empl_appl/name_details.dart';
 
 class ApplicationForm extends StatefulWidget {
@@ -31,6 +30,16 @@ class ApplicationForm extends StatefulWidget {
   );
 
   final List<HealthConditionModel> healthConditions = [];
+  final healthConditionVec = VectorForm(
+    emptyLabel: "Add Health Condtions you currently have.", 
+    itemBuilder: (list, fn) {
+      return (ctx, digit) {
+        return const Text("2");
+      };
+    }, 
+    addFn: () {}, 
+    removeFn: (digit) {}
+  );
 
   ApplicationForm({super.key});
 
@@ -64,16 +73,7 @@ class _ApplicationFormState extends State<ApplicationForm> {
               const SizedBox(height: 20.0),
 
               const Label(labelName: "Health Conditions", widgetWidth: double.maxFinite),
-              VectorForm(
-                emptyLabel: "Add Health Condtions you currently have.", 
-                itemBuilder: (list, fn) {
-                  return (ctx, digit) {
-                    return const Text("2");
-                  };
-                }, 
-                addFn: () {}, 
-                removeFn: (digit) {}
-              )
+              widget.healthConditionVec,
             ],
           )
         )

@@ -124,7 +124,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
 }
 
 class VectorForm extends StatefulWidget {
-  final healthConditions = [];
+  final List<dynamic> vecList = [];
 
   final String emptyLabel;
   final Widget Function(BuildContext, int) Function(List<dynamic>, void Function(int)) itemBuilder;
@@ -148,7 +148,7 @@ class _VectorFormState extends State<VectorForm> {
     return Column(
       children: [
         Visibility(
-          visible: widget.healthConditions.isEmpty,
+          visible: widget.vecList.isEmpty,
           child: Container(
             width: double.maxFinite,
             decoration: BoxDecoration(
@@ -168,7 +168,7 @@ class _VectorFormState extends State<VectorForm> {
         ),
 
         Visibility(
-          visible: widget.healthConditions.isNotEmpty,
+          visible: widget.vecList.isNotEmpty,
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -179,9 +179,9 @@ class _VectorFormState extends State<VectorForm> {
             padding: const EdgeInsets.all(5.0),
             child: ListView.separated(
               shrinkWrap: true,
-              itemBuilder: widget.itemBuilder(widget.healthConditions, widget.removeFn), 
+              itemBuilder: widget.itemBuilder(widget.vecList, widget.removeFn), 
               separatorBuilder: (_, __) => const SizedBox(height: 5.0), 
-              itemCount: widget.healthConditions.length
+              itemCount: widget.vecList.length
             )
           )
         ),
@@ -191,7 +191,10 @@ class _VectorFormState extends State<VectorForm> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ElevatedButton(
-              onPressed: widget.addFn, 
+              onPressed: () {
+                var item = widget.addFn();
+                widget.vecList.
+              }, 
               child: const Text('Add')
             )
           ]
