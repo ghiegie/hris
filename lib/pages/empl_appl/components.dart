@@ -18,14 +18,66 @@ class Label extends StatelessWidget {
   }
 }
 
+class GroupedTextField extends StatefulWidget {
+  final List<String> textFields;
+  final List<Widget> widgetList = [];
+
+  GroupedTextField({super.key, required this.textFields});
+
+  factory GroupedTextField.fromFields(List<String> textFields) {
+    var res = GroupedTextField(textFields: textFields);
+
+    for (var val in textFields) {
+      res.widgetList.add(
+        TextFormField(
+          decoration: TextFieldDesign.build(val),
+          controller: TextEditingController()
+        )
+      );
+    }
+
+    return res;
+  }
+
+  @override
+  State<GroupedTextField> createState() => _GroupedTextFieldState();
+}
+
+class _GroupedTextFieldState extends State<GroupedTextField> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5.0),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+        border: Border.all()
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemBuilder: _itemBuilder, 
+        separatorBuilder: _separatorbuilder, 
+        itemCount: widget.textFields.length
+      ),
+    );
+  }
+
+  Widget _separatorbuilder(BuildContext ctx, int index) {
+    return const SizedBox(height: 5.0);
+  }
+
+  Widget _itemBuilder(BuildContext ctx, int index) {
+    return widget.widgetList[index];
+  }
+}
+
 class TextFieldDesign {
-  String? label;
+  final String label;
 
-  TextFieldDesign({this.label});
+  TextFieldDesign(this.label);
 
-  static InputDecoration build({String? label}) {
-    return TextFieldDesign(label: label)._build();
-  } 
+  static InputDecoration build(String label) {
+    return TextFieldDesign(label)._build();
+  }
 
   InputDecoration _build() {
     return InputDecoration(
@@ -35,73 +87,50 @@ class TextFieldDesign {
           color: Colors.black
         )
       )
-    );
+    ); 
   }
 }
 
-InputDecoration textFieldDesign({String? label}) {
-  return InputDecoration(
-    labelText: label,
-    border: const OutlineInputBorder(
-      borderSide: BorderSide(
-        color: Colors.black
-      )
-    )
-  );
-}
+class CustomDatePicker extends StatefulWidget {
+  final controller = TextEditingController();
 
-class Datepicker extends StatefulWidget {
-  final DateTime start;
-  final DateTime end;
-
-  const Datepicker({super.key, required this.start, required this.end});
+  CustomDatePicker({super.key});
 
   @override
-  State<Datepicker> createState() => _DatepickerState();
+  State<CustomDatePicker> createState() => _CustomDatePickerState();
 }
 
-class _DatepickerState extends State<Datepicker> {
-  final controller = TextEditingController(text: "");
-
+class _CustomDatePickerState extends State<CustomDatePicker> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: widget.controller,
       readOnly: true,
-      decoration: TextFieldDesign.build(),
-      controller: controller,
-      onTap: _modFn(context),
+      decoration: TextFieldDesign.build(""),
+      onTap: _onTap,
     );
   }
 
-  void Function() _modFn(BuildContext context) {
-    modSetState(DateTime refDate) {
-      return () {
-        var newDate = "${refDate.month}/${refDate.day}/${refDate.year}";
-        controller.text = newDate;
-      };
-    } 
+  void _onTap() async {
+    final date = await showDatePicker(context: context, firstDate: DateTime(0), lastDate: DateTime.now());
 
-    return () async {
-      final date = await showDatePicker(
-        context: context, 
-        firstDate: widget.start, 
-        lastDate: widget.end
-      );
+    if (date != null) {
+      setState(_onTapSetState(date));
+    }
+  }
 
-      if (date != null) {
-        setState(modSetState(date));
-      }
+  void Function() _onTapSetState(DateTime refDate) {
+    return () {
+      widget.controller.text ="${refDate.month}/${refDate.day}/${refDate.year}";
     };
   }
 }
 
 class CustomDropdown extends StatefulWidget {
-  final List<DropdownMenuItem<dynamic>> items;
-  final dynamic Function(dynamic) onChanged;
+  final List<DropdownMenuItem<dynamic>> list;
+  late dynamic val;
 
-  dynamic selectedVal;
-
-  CustomDropdown({super.key, required this.items, required this.onChanged});
+  CustomDropdown({super.key, required this.list});
 
   @override
   State<CustomDropdown> createState() => _CustomDropdownState();
@@ -115,40 +144,39 @@ class _CustomDropdownState extends State<CustomDropdown> {
         contentPadding: EdgeInsets.all(10.0),
         border: OutlineInputBorder()
       ),
-      items: widget.items, 
-      onChanged: (val) {
-        widget.selectedVal = widget.onChanged(val);
-      }
+      items: widget.list, 
+      onChanged: _onChange
     );
+  }
+
+  void _onChange(dynamic val) {
+    setState(_onChangeSetState(val));
+  }
+
+  void Function() _onChangeSetState(dynamic val) {
+    return () => widget.val = val;
   }
 }
 
-class VectorForm extends StatefulWidget {
-  final List<dynamic> vecList = [];
-
+class VecList2<T> extends StatefulWidget {
   final String emptyLabel;
-  final Widget Function(BuildContext, int) Function(List<dynamic>, void Function(int)) itemBuilder;
-  final void Function(int) removeFn;
-  final dynamic Function() addFn;
+  final List<T> list = [];
 
-  VectorForm({
-    super.key, 
-    required this.emptyLabel, 
-    required this.itemBuilder, 
-    required this.addFn, required this.removeFn
-  });
+  VecList2({super.key, required this.emptyLabel});
 
   @override
-  State<VectorForm> createState() => _VectorFormState();
+  State<VecList2<T>> createState() => _VecList2State<T>();
 }
 
-class _VectorFormState extends State<VectorForm> {
+class _VecList2State<T> extends State<VecList2<T>> {
+  var _isThereItem = false;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Visibility(
-          visible: widget.vecList.isEmpty,
+          visible: !_isThereItem,
           child: Container(
             width: double.maxFinite,
             decoration: BoxDecoration(
@@ -163,12 +191,12 @@ class _VectorFormState extends State<VectorForm> {
                 fontWeight: FontWeight.w200,
                 fontStyle: FontStyle.italic
               ),
-            )
+            ),
           )
         ),
 
         Visibility(
-          visible: widget.vecList.isNotEmpty,
+          visible: _isThereItem,
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -178,11 +206,100 @@ class _VectorFormState extends State<VectorForm> {
             ),
             padding: const EdgeInsets.all(5.0),
             child: ListView.separated(
+              itemCount: widget.list.length,
               shrinkWrap: true,
-              itemBuilder: widget.itemBuilder(widget.vecList, widget.removeFn), 
-              separatorBuilder: (_, __) => const SizedBox(height: 5.0), 
-              itemCount: widget.vecList.length
+              itemBuilder: _itemBuilder(),
+              separatorBuilder: _separatorBuilder,
+            ),
+          )
+        ),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              onPressed: _addItem, 
+              child: const Text("Add")
             )
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _addItem() {
+    setState(_addItemSetState);
+  }
+
+  void _addItemSetState() {
+    _isThereItem = true;
+    widget.list.add(dynamic as T);
+  }
+
+  Widget _separatorBuilder(BuildContext ctx, int index) => const SizedBox(height: 5.0);
+
+  Widget Function(BuildContext ctx, int index) _itemBuilder() {
+    return (ctx, index) {
+      return const Text("asdas");
+    };
+  }
+}
+
+class VecList extends StatefulWidget {
+  final String emptyLabel;
+  final List<dynamic> list = [];
+
+  VecList({super.key, required this.emptyLabel});
+
+  @override
+  State<VecList> createState() => _VecListState();
+}
+
+class _VecListState extends State<VecList> {
+  var _isThereItem = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return  Column(
+      children: [
+        //Label(labelName: "Health Condition", widgetWidth: boxConstraints.maxWidth),
+
+        Visibility(
+          visible: !_isThereItem,
+          child: Container(
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              border: Border.all(),
+              borderRadius: const BorderRadius.all(Radius.circular(5.0))
+            ),
+            padding: const EdgeInsets.all(5.0),
+            child: Text(
+              widget.emptyLabel,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.w200,
+                fontStyle: FontStyle.italic
+              ),
+            ),
+          )
+        ),
+
+        Visibility(
+          visible: _isThereItem,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.black
+              ),
+              borderRadius: BorderRadius.circular(5.0)
+            ),
+            padding: const EdgeInsets.all(5.0),
+            child: ListView.separated(
+              itemCount: widget.list.length,
+              shrinkWrap: true,
+              itemBuilder: _itemBuilder(),
+              separatorBuilder: _separatorBuilder,
+            ),
           )
         ),
 
@@ -191,15 +308,64 @@ class _VectorFormState extends State<VectorForm> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ElevatedButton(
-              onPressed: () {
-                var item = widget.addFn();
-                widget.vecList.add(item);
-              }, 
-              child: const Text('Add')
+              onPressed: _addItem, 
+              child: const Text("Add")
             )
-          ]
-        )
-      ]
+          ],
+        ),
+      ],
     );
   }
+
+  void _addItem() {
+    setState(_addItemSetState);
+  }
+
+  void _addItemSetState() {
+    _isThereItem = true;
+    widget.list.add(dynamic);
+  }
+
+  Widget _separatorBuilder(BuildContext ctx, int index) => const SizedBox(height: 5.0);
+
+  Widget Function(BuildContext ctx, int index) _itemBuilder() {
+    return (ctx, index) {
+      return const Text("asdas");
+    };
+  }
+}
+
+class VecItem extends StatefulWidget {
+  final healtConditionName = TextEditingController();
+  final int index;
+
+  VecItem({super.key, required this.index});
+
+  @override
+  State<VecItem> createState() => _VecItemState();
+}
+
+class _VecItemState extends State<VecItem> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            decoration: TextFieldDesign.build(""),
+            controller: widget.healtConditionName
+          )
+        ),
+        const SizedBox(width: 5.0),
+        ElevatedButton(
+          onPressed: () {}, 
+          child: const Text("Remove")
+        )
+      ],
+    );
+  }
+}
+
+class Something<T> {
+
 }

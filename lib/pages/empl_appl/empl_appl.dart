@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hris/model/addr_model.dart';
 import 'package:hris/model/health_condition_model.dart';
-import 'package:hris/pages/empl_appl/appbar_leading_btn.dart';
-import 'package:hris/pages/empl_appl/appl_form.dart';
+import 'package:hris/pages/empl_appl/app_leading_btn.dart';
+import 'package:hris/pages/empl_appl/form.dart';
 
 class EmployeeApplicationPage extends StatefulWidget {
   const EmployeeApplicationPage({super.key});
@@ -58,9 +59,9 @@ class _EmployeeApplicationPageState extends State<EmployeeApplicationPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Employee Application Form"),
-        leading: appbarLeadingBtn(context)//IconButton(onPressed: _leadingOnPress, icon: const Icon(Icons.arrow_back))
+        leading: const LeadingBtn()//IconButton(onPressed: _leadingOnPress, icon: const Icon(Icons.arrow_back))
       ),
-      body: ApplicationForm()
+      body: ApplForm()
       // body: Center(
       //   child: Form(
       //     child: LayoutBuilder(builder: _formBuilder)
@@ -580,33 +581,33 @@ class _EmployeeApplicationPageState extends State<EmployeeApplicationPage> {
     );
   }
 
-  //void _leadingOnPress() => showDialog(context: context, builder: _dialogBuilder);
+  void _leadingOnPress() => showDialog(context: context, builder: _dialogBuilder);
 
-  // Widget _dialogBuilder(BuildContext buildContext) {
-  //   return Dialog(
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         const Text("Leave application form?"),
-  //         const SizedBox(height: 10.0),
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             TextButton(onPressed: _exitApplication, child: const Text("Yes")),
-  //             const SizedBox(width: 10.0),
-  //             TextButton(onPressed: _cancelExit, child: const Text("No")),
-  //           ]
-  //         )
-  //       ],
-  //     )
-  //   );
-  // }
+  Widget _dialogBuilder(BuildContext buildContext) {
+    return Dialog(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Leave application form?"),
+          const SizedBox(height: 10.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(onPressed: _exitApplication, child: const Text("Yes")),
+              const SizedBox(width: 10.0),
+              TextButton(onPressed: _cancelExit, child: const Text("No")),
+            ]
+          )
+        ],
+      )
+    );
+  }
 
-  // void _exitApplication() => context.go("/landing");
+  void _exitApplication() => context.go("/landing");
 
-  // void _cancelExit() => context.pop();
+  void _cancelExit() => context.pop();
 }
 
 // class Label extends StatelessWidget {
