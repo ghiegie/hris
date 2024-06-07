@@ -128,7 +128,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
 class CustomDropdown extends StatefulWidget {
   final List<DropdownMenuItem<dynamic>> list;
-  late dynamic val;
+  dynamic val;
   void Function()? additionalAction;
 
   CustomDropdown({super.key, required this.list, this.additionalAction});
@@ -155,11 +155,13 @@ class _CustomDropdownState extends State<CustomDropdown> {
       widget.additionalAction!();
     }
 
-    void Function() _onChangeSetState(dynamic val) {
+    
+
+    void Function() onChangeSetState(dynamic val) {
       return () => widget.val = val;
     }
 
-    setState(_onChangeSetState(val));
+    setState(onChangeSetState(val));
   }
 }
 
