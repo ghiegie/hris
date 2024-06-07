@@ -129,8 +129,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 class CustomDropdown extends StatefulWidget {
   final List<DropdownMenuItem<dynamic>> list;
   late dynamic val;
+  void Function()? additionalAction;
 
-  CustomDropdown({super.key, required this.list});
+  CustomDropdown({super.key, required this.list, this.additionalAction});
 
   @override
   State<CustomDropdown> createState() => _CustomDropdownState();
@@ -150,25 +151,42 @@ class _CustomDropdownState extends State<CustomDropdown> {
   }
 
   void _onChange(dynamic val) {
+    if (widget.additionalAction != null) {
+      widget.additionalAction!();
+    }
+
+    void Function() _onChangeSetState(dynamic val) {
+      return () => widget.val = val;
+    }
+
     setState(_onChangeSetState(val));
   }
-
-  void Function() _onChangeSetState(dynamic val) {
-    return () => widget.val = val;
-  }
 }
 
-class VecList2<T> extends StatefulWidget {
+class VecList<T> extends StatefulWidget {
   final String emptyLabel;
   final List<T> list = [];
+  late final void Function() addFunc;
+  late final Widget Function(int)? format;
 
-  VecList2({super.key, required this.emptyLabel});
+  VecList({super.key, required this.emptyLabel});
+
+  factory VecList.customBuild(String label, T Function() factory) {
+    VecList<T> res = VecList(emptyLabel: label);
+
+    res.addFunc = () {
+      T item = factory();
+      res.list.add(item);
+    };
+    
+    return res;
+  }
 
   @override
-  State<VecList2<T>> createState() => _VecList2State<T>();
+  State<VecList<T>> createState() => _VecListState<T>();
 }
 
-class _VecList2State<T> extends State<VecList2<T>> {
+class _VecListState<T> extends State<VecList<T>> {
   var _isThereItem = false;
 
   @override
@@ -214,6 +232,8 @@ class _VecList2State<T> extends State<VecList2<T>> {
           )
         ),
 
+        const SizedBox(height: 5.0),
+
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -228,144 +248,68 @@ class _VecList2State<T> extends State<VecList2<T>> {
   }
 
   void _addItem() {
-    setState(_addItemSetState);
-  }
+    void addItemSetState() {
+      _isThereItem = true;
+      widget.addFunc();
+    }
 
-  void _addItemSetState() {
-    _isThereItem = true;
-    widget.list.add(dynamic as T);
-  }
-
-  Widget _separatorBuilder(BuildContext ctx, int index) => const SizedBox(height: 5.0);
-
-  Widget Function(BuildContext ctx, int index) _itemBuilder() {
-    return (ctx, index) {
-      return const Text("asdas");
-    };
-  }
-}
-
-class VecList extends StatefulWidget {
-  final String emptyLabel;
-  final List<dynamic> list = [];
-
-  VecList({super.key, required this.emptyLabel});
-
-  @override
-  State<VecList> createState() => _VecListState();
-}
-
-class _VecListState extends State<VecList> {
-  var _isThereItem = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return  Column(
-      children: [
-        //Label(labelName: "Health Condition", widgetWidth: boxConstraints.maxWidth),
-
-        Visibility(
-          visible: !_isThereItem,
-          child: Container(
-            width: double.maxFinite,
-            decoration: BoxDecoration(
-              border: Border.all(),
-              borderRadius: const BorderRadius.all(Radius.circular(5.0))
-            ),
-            padding: const EdgeInsets.all(5.0),
-            child: Text(
-              widget.emptyLabel,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.w200,
-                fontStyle: FontStyle.italic
-              ),
-            ),
-          )
-        ),
-
-        Visibility(
-          visible: _isThereItem,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.black
-              ),
-              borderRadius: BorderRadius.circular(5.0)
-            ),
-            padding: const EdgeInsets.all(5.0),
-            child: ListView.separated(
-              itemCount: widget.list.length,
-              shrinkWrap: true,
-              itemBuilder: _itemBuilder(),
-              separatorBuilder: _separatorBuilder,
-            ),
-          )
-        ),
-
-        const SizedBox(height: 10.0),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: _addItem, 
-              child: const Text("Add")
-            )
-          ],
-        ),
-      ],
-    );
-  }
-
-  void _addItem() {
-    setState(_addItemSetState);
-  }
-
-  void _addItemSetState() {
-    _isThereItem = true;
-    widget.list.add(dynamic);
+    setState(addItemSetState);
   }
 
   Widget _separatorBuilder(BuildContext ctx, int index) => const SizedBox(height: 5.0);
 
   Widget Function(BuildContext ctx, int index) _itemBuilder() {
     return (ctx, index) {
-      return const Text("asdas");
+      late Widget toShow;
+      
+      try {
+        toShow = widget.format == null ? const Text("Error") : widget.format!(index);
+      } catch (_) {
+        toShow = const Text("Error");
+      }
+
+      return Row(
+        children: [
+          Expanded(child: toShow),
+          const SizedBox(width: 5.0),
+          ElevatedButton(
+            onPressed: _remove(index), 
+            child: const Text("Remove")
+          )
+        ],
+      );
+    };
+  }
+
+  void Function() _remove(int index) {
+    void removeSetState() {
+      widget.list.removeAt(index);
+      if (widget.list.isEmpty) {
+        _isThereItem = false;
+      }
+    }
+
+    return () {
+      setState(removeSetState);
     };
   }
 }
 
-class VecItem extends StatefulWidget {
-  final healtConditionName = TextEditingController();
-  final int index;
+class CustomTextField extends StatefulWidget {
+  final controller = TextEditingController();
 
-  VecItem({super.key, required this.index});
+  CustomTextField({super.key});
 
   @override
-  State<VecItem> createState() => _VecItemState();
+  State<CustomTextField> createState() => _CustomTextFieldState();
 }
 
-class _VecItemState extends State<VecItem> {
+class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextFormField(
-            decoration: TextFieldDesign.build(""),
-            controller: widget.healtConditionName
-          )
-        ),
-        const SizedBox(width: 5.0),
-        ElevatedButton(
-          onPressed: () {}, 
-          child: const Text("Remove")
-        )
-      ],
+    return TextFormField(
+      controller: widget.controller,
+      decoration: TextFieldDesign.build(""),
     );
   }
-}
-
-class Something<T> {
-
 }

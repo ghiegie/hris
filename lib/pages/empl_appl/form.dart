@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hris/model/health_condition_model.dart';
 import 'package:hris/pages/empl_appl/components.dart';
 
 class ApplForm extends StatefulWidget {
   final groupedTextField = GroupedTextField.fromFields(const ["Last Name", "First Name", "Middle Name", "Name Extension"]);
   final bDatePicker = CustomDatePicker();
-  final customDropdown = CustomDropdown(list: const [
+  final genderDropdown = CustomDropdown(list: const [
     DropdownMenuItem(
       value: "Male",
       child: Text("Male")
@@ -15,8 +16,29 @@ class ApplForm extends StatefulWidget {
     ),
   ]);
   final lastChkUpDatePicker = CustomDatePicker();
-  final healthConditions = VecList(emptyLabel: "sample label");
-
+  final healthConditions = VecList.customBuild(
+    "Enter Health Condition if you have any", 
+    () => HealthConditionModel()
+  );
+  final citizenship = CustomTextField();
+  final civilStat = CustomDropdown(list: const [
+    DropdownMenuItem(
+      value: "Single",
+      child: Text("Single")
+    ),
+    DropdownMenuItem(
+      value: "Married",
+      child: Text("Married")
+    ),
+    DropdownMenuItem(
+      value: "Separated",
+      child: Text("Separated")
+    ),
+    DropdownMenuItem(
+      value: "Widowed",
+      child: Text("Widowed")
+    ),
+  ]);
 
   ApplForm({super.key});
 
@@ -25,6 +47,28 @@ class ApplForm extends StatefulWidget {
 }
 
 class _ApplFormState extends State<ApplForm> {
+  @override
+  void initState() {
+    super.initState();
+
+    widget.healthConditions.format = (index) {
+      var controller = TextEditingController(text: widget.healthConditions.list[index].healthCondition);
+      controller.addListener(() {
+        setState(() {
+          widget.healthConditions.list[index].healthCondition = controller.text;
+        });
+      });
+      return TextFormField(
+        decoration: TextFieldDesign.build(""),
+        controller: controller,
+      );
+    };
+
+    widget.civilStat.additionalAction = () {
+      print(widget.civilStat.val);
+    };
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -40,7 +84,7 @@ class _ApplFormState extends State<ApplForm> {
             widget.bDatePicker,
             const SizedBox(height: 60.0),
             const Label(labelName: "Gender", widgetWidth: double.maxFinite),
-            widget.customDropdown,
+            widget.genderDropdown,
             const SizedBox(height: 60.0),
             const Label(labelName: "Last Check Up", widgetWidth: double.maxFinite),
             widget.lastChkUpDatePicker,
@@ -48,6 +92,11 @@ class _ApplFormState extends State<ApplForm> {
             const Label(labelName: "Health Conditions", widgetWidth: double.maxFinite),
             widget.healthConditions,
             const SizedBox(height: 60.0),
+            const Label(labelName: "Citizenship", widgetWidth: double.maxFinite),
+            widget.citizenship,
+            const SizedBox(height: 60.0),
+            const Label(labelName: "Civil Status", widgetWidth: double.maxFinite),
+            widget.civilStat
           ],
         )
       ),
