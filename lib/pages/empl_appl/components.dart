@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Label extends StatelessWidget {
   final String labelName;
@@ -18,19 +19,27 @@ class Label extends StatelessWidget {
   }
 }
 
+class GroupedTextFieldInputElement {
+  String label;
+  List<TextInputFormatter>? inputFormatters;
+
+  GroupedTextFieldInputElement({required this.label, this.inputFormatters});
+}
+
 class GroupedTextField extends StatefulWidget {
-  final List<String> textFields;
-  final List<Widget> widgetList = [];
+  final List<GroupedTextFieldInputElement> textFields;
+  final List<TextFormField> widgetList = [];
 
   GroupedTextField({super.key, required this.textFields});
 
-  factory GroupedTextField.fromFields(List<String> textFields) {
+  factory GroupedTextField.fromFields(List<GroupedTextFieldInputElement> textFields) {
     var res = GroupedTextField(textFields: textFields);
 
     for (var val in textFields) {
       res.widgetList.add(
         TextFormField(
-          decoration: TextFieldDesign.build(val),
+          inputFormatters: val.inputFormatters,
+          decoration: TextFieldDesign.build(val.label),
           controller: TextEditingController()
         )
       );
@@ -129,9 +138,14 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 class CustomDropdown extends StatefulWidget {
   final List<DropdownMenuItem<dynamic>> list;
   dynamic val;
-  void Function()? additionalAction;
+  //void Function()? additionalAction;
 
-  CustomDropdown({super.key, required this.list, this.additionalAction});
+  void Function()? beforeChange;
+  void Function()? afterChange;
+
+  bool visible;
+
+  CustomDropdown({super.key, required this.list, this.beforeChange, this.afterChange, this.visible = true});
 
   @override
   State<CustomDropdown> createState() => _CustomDropdownState();
@@ -140,25 +154,31 @@ class CustomDropdown extends StatefulWidget {
 class _CustomDropdownState extends State<CustomDropdown> {
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField(
-      decoration: const InputDecoration(
-        contentPadding: EdgeInsets.all(10.0),
-        border: OutlineInputBorder()
+    return Visibility(
+      visible: widget.visible,
+      child: DropdownButtonFormField(
+        decoration: const InputDecoration(
+          contentPadding: EdgeInsets.all(10.0),
+          border: OutlineInputBorder()
+        ),
+        items: widget.list, 
+        onChanged: _onChange
       ),
-      items: widget.list, 
-      onChanged: _onChange
     );
   }
 
   void _onChange(dynamic val) {
-    if (widget.additionalAction != null) {
-      widget.additionalAction!();
+    if (widget.beforeChange != null) {
+      widget.beforeChange!();
     }
 
-    
-
     void Function() onChangeSetState(dynamic val) {
-      return () => widget.val = val;
+      return () {
+        widget.val = val;
+        if (widget.afterChange != null) {
+          widget.afterChange!();
+        }
+      }; 
     }
 
     setState(onChangeSetState(val));

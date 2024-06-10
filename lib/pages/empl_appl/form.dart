@@ -3,8 +3,15 @@ import 'package:hris/model/health_condition_model.dart';
 import 'package:hris/pages/empl_appl/components.dart';
 
 class ApplForm extends StatefulWidget {
-  final groupedTextField = GroupedTextField.fromFields(const ["Last Name", "First Name", "Middle Name", "Name Extension"]);
+  final nameTextField = GroupedTextField.fromFields([
+      GroupedTextFieldInputElement(label: "Last Name"),
+      GroupedTextFieldInputElement(label: "First Name"),
+      GroupedTextFieldInputElement(label: "Middle Name"),
+      GroupedTextFieldInputElement(label: "Name Extension"),
+  ]);
+
   final bDatePicker = CustomDatePicker();
+
   final genderDropdown = CustomDropdown(list: const [
     DropdownMenuItem(
       value: "Male",
@@ -15,12 +22,16 @@ class ApplForm extends StatefulWidget {
       child: Text("Female")
     ),
   ]);
+
   final lastChkUpDatePicker = CustomDatePicker();
+
   final healthConditions = VecList.customBuild(
     "Enter Health Condition if you have any", 
     () => HealthConditionModel()
   );
+
   final citizenship = CustomTextField();
+
   final civilStat = CustomDropdown(list: const [
     DropdownMenuItem(
       value: "Single",
@@ -38,6 +49,13 @@ class ApplForm extends StatefulWidget {
       value: "Widowed",
       child: Text("Widowed")
     ),
+  ]);
+
+  final marriedInfo = GroupedTextField.fromFields([
+    GroupedTextFieldInputElement(label: "Spouse"),
+    GroupedTextFieldInputElement(label: "Occupation"),
+    GroupedTextFieldInputElement(label: "Office Address"),
+    GroupedTextFieldInputElement(label: "Children"),
   ]);
 
   ApplForm({super.key});
@@ -64,9 +82,13 @@ class _ApplFormState extends State<ApplForm> {
       );
     };
 
-    widget.civilStat.additionalAction = () {
-      print(widget.civilStat.val);
+    widget.civilStat.afterChange = () {
+      if (widget.civilStat.val == "Married") {
+        widget.civilStat.visible = false;
+      }
     };
+
+    var x = widget.marriedInfo.widgetList[3];
   }
   
   @override
@@ -78,7 +100,7 @@ class _ApplFormState extends State<ApplForm> {
         child: ListView(
           children: [
             const Label(labelName: "Name Details", widgetWidth: double.maxFinite),
-            widget.groupedTextField,     
+            widget.nameTextField,     
             const SizedBox(height: 60.0),
             const Label(labelName: "Birthdate", widgetWidth: double.maxFinite),
             widget.bDatePicker,
@@ -96,7 +118,10 @@ class _ApplFormState extends State<ApplForm> {
             widget.citizenship,
             const SizedBox(height: 60.0),
             const Label(labelName: "Civil Status", widgetWidth: double.maxFinite),
-            widget.civilStat
+            widget.civilStat,
+            const SizedBox(height: 10.0),
+            widget.marriedInfo,
+            const SizedBox(height: 60.0),
           ],
         )
       ),
