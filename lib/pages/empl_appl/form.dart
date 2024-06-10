@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hris/model/health_condition_model.dart';
 import 'package:hris/pages/empl_appl/components.dart';
 
@@ -55,7 +56,10 @@ class ApplForm extends StatefulWidget {
     GroupedTextFieldInputElement(label: "Spouse"),
     GroupedTextFieldInputElement(label: "Occupation"),
     GroupedTextFieldInputElement(label: "Office Address"),
-    GroupedTextFieldInputElement(label: "Children"),
+    GroupedTextFieldInputElement(
+      label: "Children", 
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly]
+    ),
   ]);
 
   ApplForm({super.key});
@@ -82,13 +86,14 @@ class _ApplFormState extends State<ApplForm> {
       );
     };
 
+    //widget.marriedInfo.visible = false;
     widget.civilStat.afterChange = () {
       if (widget.civilStat.val == "Married") {
-        widget.civilStat.visible = false;
+        widget.marriedInfo.visible = true;
+      } else {
+        widget.marriedInfo.visible = false; 
       }
     };
-
-    var x = widget.marriedInfo.widgetList[3];
   }
   
   @override

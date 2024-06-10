@@ -29,8 +29,9 @@ class GroupedTextFieldInputElement {
 class GroupedTextField extends StatefulWidget {
   final List<GroupedTextFieldInputElement> textFields;
   final List<TextFormField> widgetList = [];
+  bool visible;
 
-  GroupedTextField({super.key, required this.textFields});
+  GroupedTextField({super.key, required this.textFields, this.visible = true});
 
   factory GroupedTextField.fromFields(List<GroupedTextFieldInputElement> textFields) {
     var res = GroupedTextField(textFields: textFields);
@@ -55,17 +56,20 @@ class GroupedTextField extends StatefulWidget {
 class _GroupedTextFieldState extends State<GroupedTextField> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-        border: Border.all()
-      ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        itemBuilder: _itemBuilder, 
-        separatorBuilder: _separatorbuilder, 
-        itemCount: widget.textFields.length
+    return Visibility(
+      visible: widget.visible,
+      child: Container(
+        padding: const EdgeInsets.all(5.0),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+          border: Border.all()
+        ),
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemBuilder: _itemBuilder, 
+          separatorBuilder: _separatorbuilder, 
+          itemCount: widget.textFields.length
+        ),
       ),
     );
   }
@@ -143,9 +147,7 @@ class CustomDropdown extends StatefulWidget {
   void Function()? beforeChange;
   void Function()? afterChange;
 
-  bool visible;
-
-  CustomDropdown({super.key, required this.list, this.beforeChange, this.afterChange, this.visible = true});
+  CustomDropdown({super.key, required this.list, this.beforeChange, this.afterChange});
 
   @override
   State<CustomDropdown> createState() => _CustomDropdownState();
@@ -154,26 +156,22 @@ class CustomDropdown extends StatefulWidget {
 class _CustomDropdownState extends State<CustomDropdown> {
   @override
   Widget build(BuildContext context) {
-    return Visibility(
-      visible: widget.visible,
-      child: DropdownButtonFormField(
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.all(10.0),
-          border: OutlineInputBorder()
-        ),
-        items: widget.list, 
-        onChanged: _onChange
+    return DropdownButtonFormField(
+      decoration: const InputDecoration(
+        contentPadding: EdgeInsets.all(10.0),
+        border: OutlineInputBorder()
       ),
+      items: widget.list, 
+      onChanged: _onChange
     );
   }
 
   void _onChange(dynamic val) {
-    if (widget.beforeChange != null) {
-      widget.beforeChange!();
-    }
-
     void Function() onChangeSetState(dynamic val) {
       return () {
+        if (widget.beforeChange != null) {
+          widget.beforeChange!();
+        }
         widget.val = val;
         if (widget.afterChange != null) {
           widget.afterChange!();
@@ -182,6 +180,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
     }
 
     setState(onChangeSetState(val));
+    
   }
 }
 
