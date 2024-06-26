@@ -1,6 +1,6 @@
 class AddrModel {
-  bool isMailAddr;
-  AddrType addrType;
+  bool isMailAddr = false;
+  AddrType addrType = AddrType.Undefined;
   String unitNo = "";
   String buildName = "";
   String buildNo = "";
@@ -12,7 +12,7 @@ class AddrModel {
   String prov = "";
   String zip = "";
 
-  AddrModel(this.addrType, this.isMailAddr);
+  AddrModel();
 
   static bool changeIsMailAddr(AddrModel obj) {
     print("Before: ${obj.isMailAddr}");
